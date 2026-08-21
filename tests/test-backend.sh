@@ -22,6 +22,12 @@ jq -e '.result.detail | fromjson | .versions | type == "array"' <<< "$state" >/d
 environment="$(invoke environment.inspect '{}')"
 jq -e '.result.detail | fromjson | .nvmScript | endswith("nvm.sh")' <<< "$environment" >/dev/null
 
+environment_without_shell="$({
+  jq -cn '{jsonrpc:"2.0",id:"test",method:"environment.inspect",params:{payload:{}}}' \
+    | env -u SHELL "$backend"
+})"
+jq -e '.result.detail | fromjson | .shell == "/bin/zsh"' <<< "$environment_without_shell" >/dev/null
+
 remote="$(invoke nvm.remote '{}')"
 jq -e '.result.detail | fromjson | length > 100' <<< "$remote" >/dev/null
 
