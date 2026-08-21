@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'">
+  <title>NVM</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header class="workspace-header">
+      <div>
+        <h1>NVM 工作区</h1>
+        <p id="status">正在读取本机环境...</p>
+      </div>
+      <nav aria-label="NVM 功能">
+        <button class="tab active" data-panel="installed">已安装</button>
+        <button class="tab" data-panel="online">在线版本</button>
+        <button class="tab" data-panel="projects">项目</button>
+        <button class="tab" data-panel="environment">环境</button>
+      </nav>
+    </header>
+
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <div id="operation" class="operation" role="status" aria-live="polite" hidden>
+      <div class="operation-copy">
+        <strong id="operation-title">正在安装</strong>
+        <span id="operation-stage">准备 NVM 环境</span>
+      </div>
+      <progress aria-label="安装进行中"></progress>
+      <time id="operation-time">00:00</time>
+    </div>
+
+    <section id="installed" class="panel active">
+      <div class="section-toolbar">
+        <div><h2>已安装</h2><p id="installed-summary">正在读取...</p></div>
+        <button id="refresh-installed" type="button">刷新</button>
+      </div>
+      <div class="table-frame">
+        <table>
+          <thead><tr><th>版本</th><th>状态</th><th class="actions">操作</th></tr></thead>
+          <tbody id="installed-rows"></tbody>
+        </table>
+        <div id="installed-empty" class="empty" hidden>没有检测到已安装的 Node.js 版本</div>
+      </div>
+    </section>
+
+    <section id="online" class="panel">
+      <div class="section-toolbar">
+        <div><h2>在线版本</h2><p id="online-summary">尚未读取版本索引</p></div>
+        <div class="toolbar-actions">
+          <div class="segmented"><button class="filter active" data-filter="lts">LTS</button><button class="filter" data-filter="all">全部</button></div>
+          <input id="version-search" type="search" placeholder="搜索版本或 LTS">
+          <button id="refresh-online" type="button">刷新</button>
+        </div>
+      </div>
+      <div class="table-frame">
+        <table>
+          <thead><tr><th>版本</th><th>LTS</th><th>发布日期</th><th>npm</th><th>V8</th><th>Mac</th><th class="actions">操作</th></tr></thead>
+          <tbody id="online-rows"></tbody>
+        </table>
+        <div id="online-empty" class="empty" hidden>没有符合条件的在线版本</div>
+      </div>
+    </section>
+
+    <section id="projects" class="panel">
+      <div class="section-toolbar">
+        <div><h2>项目</h2><p id="project-summary">0 个项目</p></div>
+        <form id="project-form" class="path-form">
+          <input id="project-path" type="text" placeholder="/Users/name/project" aria-label="项目目录">
+          <button type="submit">添加项目</button>
+        </form>
+      </div>
+      <div id="project-list" class="project-list"></div>
+      <div id="project-empty" class="empty">还没有添加项目</div>
+    </section>
+
+    <section id="environment" class="panel">
+      <div class="section-toolbar">
+        <div><h2>环境</h2><p>NVM、Shell 与默认版本状态</p></div>
+        <button id="refresh-environment" type="button">重新检测</button>
+      </div>
+      <form id="nvm-directory-form" class="directory-form">
+        <label for="nvm-directory">自定义 NVM 目录</label>
+        <input id="nvm-directory" type="text" placeholder="自动检测 ~/.nvm">
+        <button type="submit">应用</button>
+        <button id="clear-nvm-directory" type="button">恢复自动检测</button>
+      </form>
+      <div id="health-list" class="health-list"></div>
+      <dl id="environment-values" class="environment-values"></dl>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

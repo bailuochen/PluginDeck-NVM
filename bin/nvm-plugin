@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+set -eu
+
+plugin_root="${0:A:h:h}"
+exec /usr/bin/osascript -l JavaScript "$plugin_root/lib/nvm-plugin.js"

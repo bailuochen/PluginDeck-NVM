@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "dev.plugindeck.nvm",
+  "name": "NVM",
+  "summary": "可视化管理 Node.js 版本、默认环境与项目运行时。",
+  "description": "使用本机已有的 NVM 管理 Node.js 版本，查看完整在线发布信息，检测项目版本文件并检查 Shell 环境。",
+  "version": "1.0.0",
+  "category": "runtimes",
+  "author": {
+    "name": "LuoChen",
+    "url": "https://github.com/bailuochen"
+  },
+  "trustLevel": "community",
+  "releaseStatus": "available",
+  "permissions": ["network", "shell", "file.read", "file.write"],
+  "networkDomains": ["nodejs.org", "npmmirror.com", "github.com"],
+  "compatibility": {
+    "minimumHostVersion": "0.5.0",
+    "minimumMacOSVersion": "13.0",
+    "architectures": ["arm64", "x86_64"]
+  },
+  "entryPoint": {
+    "executable": "bin/nvm-plugin",
+    "protocolVersion": 1
+  },
+  "ui": {
+    "entryPoint": "ui/index.html",
+    "bridgeVersion": 1
+  },
+  "distribution": {},
+  "repositoryURL": "https://github.com/bailuochen/PluginDeck-NVM",
+  "icon": "point.3.connected.trianglepath.dotted",
+  "featured": true,
+  "capabilities": [
+    "已安装版本与默认版本管理",
+    "在线 LTS / 全部版本与发布元数据",
+    "Node.js 版本安装与卸载",
+    "项目版本检测与终端启动",
+    "NVM、Shell 和默认版本健康检查"
+  ],
+  "actions": [
+    { "id": "state", "title": "刷新 NVM 状态", "description": "读取已安装版本和默认版本。", "icon": "arrow.clockwise", "method": "nvm.state", "requiresConfirmation": false },
+    { "id": "remote", "title": "读取在线版本", "description": "从 Node.js 版本索引读取在线发布信息。", "icon": "network", "method": "nvm.remote", "requiresConfirmation": false },
+    { "id": "install", "title": "安装 Node.js", "description": "使用 nvm install 下载并安装指定 Node.js 版本。", "icon": "arrow.down.to.line", "method": "nvm.install", "requiresConfirmation": true, "timeoutSeconds": 900 },
+    { "id": "uninstall", "title": "卸载 Node.js", "description": "使用 nvm uninstall 删除指定 Node.js 版本。", "icon": "trash", "method": "nvm.uninstall", "requiresConfirmation": true, "timeoutSeconds": 180 },
+    { "id": "default", "title": "设置默认版本", "description": "更新 NVM default alias。", "icon": "checkmark.circle", "method": "nvm.default", "requiresConfirmation": true },
+    { "id": "terminal", "title": "打开版本终端", "description": "在 Terminal 中加载指定 Node.js 版本。", "icon": "terminal", "method": "nvm.terminal", "requiresConfirmation": false },
+    { "id": "project-inspect", "title": "检查项目", "description": "读取项目中的 Node.js 版本配置。", "icon": "folder", "method": "project.inspect", "requiresConfirmation": false },
+    { "id": "project-write", "title": "写入项目版本", "description": "向项目目录写入 .nvmrc。", "icon": "square.and.pencil", "method": "project.write", "requiresConfirmation": true },
+    { "id": "project-terminal", "title": "打开项目终端", "description": "在项目目录打开 Terminal 并执行 nvm use。", "icon": "terminal", "method": "project.terminal", "requiresConfirmation": false },
+    { "id": "environment", "title": "检查 NVM 环境", "description": "检查 NVM 路径、Shell 配置和默认版本。", "icon": "wrench.and.screwdriver", "method": "environment.inspect", "requiresConfirmation": false }
+  ]
+}
