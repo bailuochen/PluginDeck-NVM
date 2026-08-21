@@ -1,5 +1,7 @@
 # PluginDeck NVM
 
+Current release: 1.1.1
+
 NVM is a community plugin for [PluginDeck](https://github.com/bailuochen/PluginDeck). It provides a native-hosted workspace for managing local Node.js versions through an existing NVM installation.
 
 ## Features
