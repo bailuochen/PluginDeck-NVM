@@ -14,7 +14,7 @@ NVM is a community plugin for [PluginDeck](https://github.com/bailuochen/PluginD
 ## Requirements
 
 - macOS 13 or later
-- PluginDeck 0.5.0 or later
+- PluginDeck 0.5.1 or later
 - NVM installed at `~/.nvm`, Homebrew's standard location, or a custom directory
 
 ## Install
