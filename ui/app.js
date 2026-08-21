@@ -1,7 +1,20 @@
+function loadRemoteCache() {
+  try {
+    const cached = JSON.parse(localStorage.getItem("nvm-remote-cache") || "null");
+    if (!cached || !Array.isArray(cached.releases) || Date.now() - cached.savedAt > 6 * 60 * 60 * 1000) return null;
+    return cached;
+  } catch (_) { return null; }
+}
+
+const remoteCache = loadRemoteCache();
 const state = {
   nvm: { versions: [], defaultVersion: null, nvmDirectory: "", nvmScript: "" },
-  remote: [],
+  remote: remoteCache?.releases || [],
+  remoteSavedAt: remoteCache?.savedAt || null,
   remoteFilter: "lts",
+  remotePage: 0,
+  remotePageSize: 40,
+  remoteLoading: false,
   versionSearch: "",
   projects: JSON.parse(localStorage.getItem("nvm-projects") || "[]"),
   projectDetails: new Map(),
@@ -18,7 +31,11 @@ const elements = {
   projectList: $("#project-list"), projectEmpty: $("#project-empty"), projectSummary: $("#project-summary"),
   healthList: $("#health-list"), environmentValues: $("#environment-values"),
   operation: $("#operation"), operationTitle: $("#operation-title"),
-  operationStage: $("#operation-stage"), operationTime: $("#operation-time")
+  operationStage: $("#operation-stage"), operationTime: $("#operation-time"),
+  summaryDefault: $("#summary-default"), summaryInstalled: $("#summary-installed"),
+  summaryDirectory: $("#summary-directory"), onlineLoading: $("#online-loading"),
+  onlineUpdated: $("#online-updated"), pageInfo: $("#page-info"),
+  previousPage: $("#previous-page"), nextPage: $("#next-page")
 };
 
 function payload(values = {}) {
@@ -32,7 +49,9 @@ function notice(message = "") {
 
 function setBusy(value, message = "") {
   state.busy = value;
-  document.querySelectorAll("button, select").forEach((control) => { control.disabled = value; });
+  document.querySelectorAll(
+    "#installed button, #installed select, #projects button, #projects select, #environment button, #environment select"
+  ).forEach((control) => { control.disabled = value; });
   if (message) elements.status.textContent = message;
 }
 
@@ -102,11 +121,19 @@ async function refreshState() {
     elements.status.textContent = state.nvm.defaultVersion
       ? `默认版本 ${state.nvm.defaultVersion}` : "尚未设置默认版本";
     renderInstalled();
+    renderSummary();
     renderProjects();
   } catch (error) {
     notice(error.message || String(error));
     elements.status.textContent = "NVM 不可用";
   } finally { setBusy(false); }
+}
+
+function renderSummary() {
+  elements.summaryDefault.textContent = state.nvm.defaultVersion || "未设置";
+  elements.summaryInstalled.textContent = `${state.nvm.versions.length} 个版本`;
+  elements.summaryDirectory.textContent = state.nvm.nvmDirectory || "未检测到";
+  elements.summaryDirectory.title = state.nvm.nvmDirectory || "";
 }
 
 function renderInstalled() {
@@ -156,15 +183,33 @@ async function uninstall(version) {
   catch (error) { notice(error.message || String(error)); setBusy(false); }
 }
 
-async function loadRemote() {
-  setBusy(true, "正在读取 Node.js 在线版本...");
+function setRemoteLoading(value) {
+  state.remoteLoading = value;
+  elements.onlineLoading.hidden = !value;
+  $("#online-rows").closest("table").hidden = value;
+  $("#refresh-online").disabled = value;
+  elements.previousPage.disabled = value;
+  elements.nextPage.disabled = value;
+}
+
+async function loadRemote(force = false) {
+  if (state.remoteLoading) return;
+  if (!force && state.remote.length) {
+    renderRemote();
+    return;
+  }
+  setRemoteLoading(true);
+  elements.status.textContent = "正在同步 Node.js 在线版本...";
   notice();
   try {
     state.remote = parseDetail(await invoke("remote"));
+    state.remoteSavedAt = Date.now();
+    localStorage.setItem("nvm-remote-cache", JSON.stringify({ savedAt: state.remoteSavedAt, releases: state.remote }));
+    state.remotePage = 0;
     renderRemote();
     elements.status.textContent = "在线版本已更新";
   } catch (error) { notice(error.message || String(error)); }
-  finally { setBusy(false); }
+  finally { setRemoteLoading(false); renderRemote(); }
 }
 
 function visibleRemote() {
@@ -179,8 +224,12 @@ function visibleRemote() {
 
 function renderRemote() {
   const releases = visibleRemote();
+  const pageCount = Math.max(1, Math.ceil(releases.length / state.remotePageSize));
+  state.remotePage = Math.min(state.remotePage, pageCount - 1);
+  const pageStart = state.remotePage * state.remotePageSize;
+  const pageReleases = releases.slice(pageStart, pageStart + state.remotePageSize);
   elements.onlineRows.replaceChildren();
-  releases.forEach((release) => {
+  pageReleases.forEach((release) => {
     const row = document.createElement("tr");
     row.append(
       cell(release.version + (release.security ? " · 安全" : ""), "version"),
@@ -196,6 +245,12 @@ function renderRemote() {
   });
   elements.onlineEmpty.hidden = releases.length !== 0;
   elements.onlineSummary.textContent = `${releases.length} 个可见版本 · 共 ${state.remote.length} 个发布`;
+  elements.pageInfo.textContent = `第 ${state.remotePage + 1} / ${pageCount} 页`;
+  elements.previousPage.disabled = state.remoteLoading || state.remotePage === 0;
+  elements.nextPage.disabled = state.remoteLoading || state.remotePage >= pageCount - 1;
+  elements.onlineUpdated.textContent = state.remoteSavedAt
+    ? `更新于 ${new Date(state.remoteSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+    : "尚未同步";
 }
 
 async function install(version) {
@@ -325,15 +380,20 @@ document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click",
   tab.classList.add("active");
   $(`#${tab.dataset.panel}`).classList.add("active");
   if (tab.dataset.panel === "online" && state.remote.length === 0) loadRemote();
+  else if (tab.dataset.panel === "online") renderRemote();
   if (tab.dataset.panel === "environment") loadEnvironment();
 }));
 document.querySelectorAll(".filter").forEach((item) => item.addEventListener("click", () => {
   document.querySelectorAll(".filter").forEach((button) => button.classList.remove("active"));
-  item.classList.add("active"); state.remoteFilter = item.dataset.filter; renderRemote();
+  item.classList.add("active"); state.remoteFilter = item.dataset.filter; state.remotePage = 0; renderRemote();
 }));
-$("#version-search").addEventListener("input", (event) => { state.versionSearch = event.target.value; renderRemote(); });
+$("#version-search").addEventListener("input", (event) => {
+  state.versionSearch = event.target.value; state.remotePage = 0; renderRemote();
+});
 $("#refresh-installed").addEventListener("click", refreshState);
-$("#refresh-online").addEventListener("click", loadRemote);
+$("#refresh-online").addEventListener("click", () => loadRemote(true));
+elements.previousPage.addEventListener("click", () => { state.remotePage -= 1; renderRemote(); });
+elements.nextPage.addEventListener("click", () => { state.remotePage += 1; renderRemote(); });
 $("#refresh-environment").addEventListener("click", loadEnvironment);
 $("#project-form").addEventListener("submit", (event) => {
   event.preventDefault(); addProject($("#project-path").value); $("#project-path").value = "";
@@ -348,4 +408,5 @@ $("#clear-nvm-directory").addEventListener("click", async () => {
   await refreshState(); await loadEnvironment();
 });
 
+if (state.remote.length) renderRemote();
 refreshState();

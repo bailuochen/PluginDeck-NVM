@@ -22,6 +22,9 @@ jq -e '.result.detail | fromjson | .versions | type == "array"' <<< "$state" >/d
 environment="$(invoke environment.inspect '{}')"
 jq -e '.result.detail | fromjson | .nvmScript | endswith("nvm.sh")' <<< "$environment" >/dev/null
 
+remote="$(invoke nvm.remote '{}')"
+jq -e '.result.detail | fromjson | length > 100' <<< "$remote" >/dev/null
+
 project="$(invoke project.inspect "$(jq -cn --arg path "$plugin_root" '{path:$path}')")"
 jq -e --arg path "$plugin_root" '.result.detail | fromjson | .path == $path' <<< "$project" >/dev/null
 

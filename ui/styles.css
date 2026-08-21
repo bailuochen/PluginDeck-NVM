@@ -23,6 +23,18 @@ p { margin-top: 4px; color: color-mix(in srgb, CanvasText 58%, transparent); fon
 }
 
 .workspace-header { justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+.summary-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: -2px 0 18px;
+  border-top: 1px solid color-mix(in srgb, CanvasText 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, CanvasText 12%, transparent);
+}
+.summary-bar > div { min-width: 0; padding: 10px 14px; border-right: 1px solid color-mix(in srgb, CanvasText 10%, transparent); }
+.summary-bar > div:first-child { padding-left: 0; }
+.summary-bar > div:last-child { border-right: 0; }
+.summary-bar span { display: block; color: color-mix(in srgb, CanvasText 54%, transparent); font-size: 10px; }
+.summary-bar strong { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px ui-monospace, "SFMono-Regular", Menlo, monospace; }
 nav, .segmented { display: flex; border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 7px; overflow: hidden; }
 button, input, select {
   min-height: 30px;
@@ -64,6 +76,8 @@ nav button.active, .segmented button.active { background: AccentColor; color: wh
 .panel { display: none; }
 .panel.active { display: block; }
 .section-toolbar { justify-content: space-between; gap: 16px; margin-bottom: 13px; }
+.section-toolbar > :first-child { flex: 1 1 auto; min-width: 0; }
+.section-toolbar > button { flex: 0 0 auto; width: auto; }
 .toolbar-actions { gap: 8px; }
 #version-search { width: 160px; }
 
@@ -80,6 +94,14 @@ td.actions { overflow: visible; }
 .badge { display: inline-block; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, #247a55 12%, Canvas); color: #247a55; font-size: 11px; }
 .danger { color: #bf3838; border-color: color-mix(in srgb, #bf3838 42%, transparent); background: transparent; }
 .empty { padding: 74px 20px; text-align: center; color: color-mix(in srgb, CanvasText 54%, transparent); font-size: 13px; }
+.loading-state { display: flex; min-height: 260px; align-items: center; justify-content: center; gap: 9px; color: color-mix(in srgb, CanvasText 58%, transparent); font-size: 12px; }
+.loading-state[hidden] { display: none; }
+.spinner { width: 14px; height: 14px; border: 2px solid color-mix(in srgb, CanvasText 18%, transparent); border-top-color: AccentColor; border-radius: 50%; animation: spin .8s linear infinite; }
+.table-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 42px; color: color-mix(in srgb, CanvasText 54%, transparent); font-size: 11px; }
+.pagination { display: flex; align-items: center; gap: 8px; }
+.pagination button { min-height: 26px; padding: 3px 9px; }
+.pagination span { min-width: 76px; text-align: center; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .path-form { gap: 8px; }
 #project-path { width: 280px; }
@@ -108,4 +130,7 @@ td.actions { overflow: visible; }
   .toolbar-actions { flex-wrap: wrap; }
   .operation { grid-template-columns: 1fr 44px; }
   .operation progress { grid-column: 1 / -1; grid-row: 2; }
+  .summary-bar { grid-template-columns: 1fr; }
+  .summary-bar > div { padding-left: 0; border-right: 0; border-bottom: 1px solid color-mix(in srgb, CanvasText 10%, transparent); }
+  .summary-bar > div:last-child { border-bottom: 0; }
 }
